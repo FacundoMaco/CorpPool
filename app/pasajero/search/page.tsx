@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import RouteCard from "@/components/RouteCard";
-import MockMap from "@/components/MockMap";
+import MapView from "@/components/MapView";
 import { mockRoutes } from "@/data/mock";
 
 export default function SearchPage() {
@@ -33,7 +33,7 @@ export default function SearchPage() {
           </p>
         </div>
         <div className="mb-6">
-          <MockMap origin={searchOrigin || undefined} destination={searchDestination || undefined} />
+          <MapView origin={searchOrigin || undefined} destination={searchDestination || undefined} />
         </div>
         <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-4 mb-6">
           <div className="space-y-4">

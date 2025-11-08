@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import MockMap from "@/components/MockMap";
+import MapView from "@/components/MapView";
 
 export default function PublishPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function PublishPage() {
           </p>
         </div>
         <div className="mb-6">
-          <MockMap origin={formData.origin || undefined} destination={formData.destination || undefined} />
+          <MapView origin={formData.origin || undefined} destination={formData.destination || undefined} />
         </div>
         <form onSubmit={handleSubmit} className="bg-[#1a1a1a] rounded-2xl border border-[#2a2a2a] p-6">
           <div className="space-y-5">
