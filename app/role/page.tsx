@@ -8,7 +8,11 @@ export default function RolePage() {
 
   const handleRoleSelection = (role: "conductor" | "pasajero") => {
     localStorage.setItem("role", role);
-    router.push(`/${role}/dashboard`);
+    if (role === "conductor") {
+      router.push("/conductor/register");
+    } else {
+      router.push(`/${role}/dashboard`);
+    }
   };
 
   return (

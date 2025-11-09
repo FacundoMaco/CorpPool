@@ -9,6 +9,7 @@ import RatingStars from "@/components/RatingStars";
 export default function ConductorProfilePage() {
   const router = useRouter();
   const [userName, setUserName] = useState("Usuario");
+  const [planType, setPlanType] = useState<"premium" | "freemium" | null>(null);
   const averageRating =
     mockDriverHistory.reduce((sum, item) => sum + (item.rating || 0), 0) / mockDriverHistory.length;
 
@@ -19,14 +20,32 @@ export default function ConductorProfilePage() {
     if (name) {
       setUserName(name);
     }
+    
+    const plan = localStorage.getItem("planType") as "premium" | "freemium" | null;
+    setPlanType(plan);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("loggedIn");
     localStorage.removeItem("userName");
     localStorage.removeItem("role");
+    localStorage.removeItem("planType");
     router.push("/login");
   };
+
+  const premiumBenefits = [
+    "Viajes ilimitados",
+    "Prioridad en búsquedas",
+    "Soporte prioritario",
+    "Estadísticas avanzadas",
+    "Sin comisiones",
+  ];
+
+  const freemiumBenefits = [
+    "3 viajes al mes",
+    "Acceso básico a pasajeros",
+    "Soporte por email",
+  ];
 
   return (
     <div className="min-h-screen bg-[#121212] animate-fade-in">
@@ -38,10 +57,55 @@ export default function ConductorProfilePage() {
         </div>
         <div className="space-y-6">
           <div className="bg-[#1a1a1a] rounded-2xl border border-[#2a2a2a] p-6">
-            <div className="mb-4">
-              <p className="text-sm text-gray-400 mb-1">Usuario</p>
-              <p className="text-lg font-semibold text-white">{userName}</p>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-sm text-gray-400 mb-1">Usuario</p>
+                <p className="text-lg font-semibold text-white">{userName}</p>
+              </div>
+              {planType === "premium" && (
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  PREMIUM
+                </div>
+              )}
             </div>
+            
+            {planType && (
+              <div className="mb-6 pt-4 border-t border-[#2a2a2a]">
+                <p className="text-sm text-gray-400 mb-3">Plan actual</p>
+                <div className={`rounded-lg p-4 ${planType === "premium" ? "bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border border-indigo-500/30" : "bg-[#121212] border border-[#2a2a2a]"}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className={`font-bold ${planType === "premium" ? "text-indigo-400" : "text-white"}`}>
+                      Plan {planType === "premium" ? "Premium" : "Freemium"}
+                    </p>
+                    {planType === "premium" && (
+                      <span className="text-xs text-indigo-400 font-semibold">S/39.90/mes</span>
+                    )}
+                  </div>
+                  <ul className="space-y-2">
+                    {(planType === "premium" ? premiumBenefits : freemiumBenefits).map((benefit, index) => (
+                      <li key={index} className="flex items-center gap-2 text-sm text-gray-300">
+                        <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+                  {planType === "freemium" && (
+                    <button
+                      onClick={() => router.push("/conductor/plan")}
+                      className="w-full mt-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm transition-all duration-200 active:scale-95"
+                    >
+                      Actualizar a Premium
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-6 pt-4 border-t border-[#2a2a2a]">
               <div>
                 <p className="text-sm text-gray-400 mb-1">Saldo disponible</p>

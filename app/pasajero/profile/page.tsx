@@ -95,7 +95,7 @@ export default function PasajeroProfilePage() {
             className="w-full px-6 py-3 bg-red-600/20 hover:bg-red-600/30 border-2 border-red-600/50 text-red-400 font-semibold rounded-full transition-all duration-200 active:scale-95"
           >
             Cerrar sesión
-          </button>
+            </button>
         </div>
       </main>
     </div>

@@ -54,7 +54,7 @@ export default function PlanCard({ name, price, features, isPremium, onSelect }:
             : "bg-[#2a2a2a] hover:bg-[#333333] text-gray-300 border border-[#2a2a2a]"
         }`}
       >
-        {isPremium ? "Elegir Premium" : "Elegir Freemium"}
+        Elegir
       </button>
     </div>
   );

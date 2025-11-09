@@ -9,18 +9,18 @@ export default function ConductorRegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
-    company: "",
     plate: "",
-    vehicle: "",
+    license: "",
+    soat: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/conductor/publish");
+    localStorage.setItem("driverData", JSON.stringify(formData));
+    router.push("/conductor/plan");
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -54,7 +54,7 @@ export default function ConductorRegisterPage() {
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-300 mb-2">
-                Correo electrónico
+                Correo institucional
               </label>
               <input
                 type="email"
@@ -68,38 +68,8 @@ export default function ConductorRegisterPage() {
               />
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-gray-300 mb-2">
-                Celular
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+51 987 654 321"
-                required
-                className="w-full px-4 py-3 bg-[#121212] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label htmlFor="company" className="block text-sm font-semibold text-gray-300 mb-2">
-                Empresa
-              </label>
-              <input
-                type="text"
-                id="company"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                placeholder="Nombre de tu empresa"
-                required
-                className="w-full px-4 py-3 bg-[#121212] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none transition-all"
-              />
-            </div>
-            <div>
               <label htmlFor="plate" className="block text-sm font-semibold text-gray-300 mb-2">
-                Placa del vehículo
+                Número de placa
               </label>
               <input
                 type="text"
@@ -108,20 +78,37 @@ export default function ConductorRegisterPage() {
                 value={formData.plate}
                 onChange={handleChange}
                 placeholder="ABC-1234"
+                required
                 className="w-full px-4 py-3 bg-[#121212] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none transition-all"
               />
             </div>
             <div>
-              <label htmlFor="vehicle" className="block text-sm font-semibold text-gray-300 mb-2">
-                Vehículo (opcional)
+              <label htmlFor="license" className="block text-sm font-semibold text-gray-300 mb-2">
+                Número de licencia
               </label>
               <input
                 type="text"
-                id="vehicle"
-                name="vehicle"
-                value={formData.vehicle}
+                id="license"
+                name="license"
+                value={formData.license}
                 onChange={handleChange}
-                placeholder="Ej: Toyota Corolla 2020"
+                placeholder="12345678"
+                required
+                className="w-full px-4 py-3 bg-[#121212] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label htmlFor="soat" className="block text-sm font-semibold text-gray-300 mb-2">
+                SOAT (número)
+              </label>
+              <input
+                type="text"
+                id="soat"
+                name="soat"
+                value={formData.soat}
+                onChange={handleChange}
+                placeholder="123456789012"
+                required
                 className="w-full px-4 py-3 bg-[#121212] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none transition-all"
               />
             </div>

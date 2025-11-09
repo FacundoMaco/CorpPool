@@ -21,7 +21,7 @@ export default function ConductorLayout({
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-[#121212] pb-16">
+    <div className="min-h-screen bg-[#121212] pb-20 safe-area-bottom">
       {children}
       <BottomNav />
     </div>

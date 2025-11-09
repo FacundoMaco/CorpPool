@@ -1,76 +1,224 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { mockRoutes, mockPassengers } from "@/data/mock";
+import MapView from "@/components/MapView";
+import { DriverOffer } from "@/data/mock";
+
+type TripStatus = "waiting" | "driver_coming" | "in_progress" | "arriving";
 
 export default function PasajeroRoutePage() {
   const router = useRouter();
-  const route = mockRoutes[0];
+  const [selectedOffer, setSelectedOffer] = useState<DriverOffer | null>(null);
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [destination, setDestination] = useState("");
+  const [tripStatus, setTripStatus] = useState<TripStatus>("waiting");
+  const [timeRemaining, setTimeRemaining] = useState(5);
+
+  useEffect(() => {
+    const offerData = localStorage.getItem("selectedDriverOffer");
+    const pickup = localStorage.getItem("passengerPickup");
+    const dest = localStorage.getItem("passengerDestination");
+
+    if (offerData) {
+      try {
+        setSelectedOffer(JSON.parse(offerData));
+      } catch (e) {
+        console.error("Error parsing offer", e);
+      }
+    }
+
+    if (pickup) setPickupLocation(pickup);
+    if (dest) setDestination(dest);
+
+    const statusInterval = setInterval(() => {
+      setTripStatus((prev) => {
+        if (prev === "waiting") return "driver_coming";
+        if (prev === "driver_coming") return "in_progress";
+        if (prev === "in_progress") return "arriving";
+        return prev;
+      });
+    }, 8000);
+
+    const timeInterval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          return tripStatus === "waiting" ? 5 : tripStatus === "driver_coming" ? 3 : tripStatus === "in_progress" ? 8 : 2;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(statusInterval);
+      clearInterval(timeInterval);
+    };
+  }, [tripStatus]);
+
+  const getStatusInfo = () => {
+    switch (tripStatus) {
+      case "waiting":
+        return {
+          title: "Esperando confirmación",
+          subtitle: "El conductor está confirmando tu solicitud",
+          icon: "⏳",
+          color: "text-yellow-400",
+        };
+      case "driver_coming":
+        return {
+          title: "Conductor en camino",
+          subtitle: `${selectedOffer?.driverName} está yendo a recogerte`,
+          icon: "🚗",
+          color: "text-blue-400",
+        };
+      case "in_progress":
+        return {
+          title: "Viaje en curso",
+          subtitle: "Estás en camino a tu destino",
+          icon: "📍",
+          color: "text-green-400",
+        };
+      case "arriving":
+        return {
+          title: "Llegando a destino",
+          subtitle: "Estás por llegar",
+          icon: "✅",
+          color: "text-green-400",
+        };
+    }
+  };
+
+  const handleCancelTrip = () => {
+    if (confirm("¿Estás seguro de cancelar este viaje?")) {
+      localStorage.removeItem("selectedDriverOffer");
+      router.push("/pasajero/search");
+    }
+  };
+
+  const handleFinishTrip = () => {
+    router.push("/pasajero/rating");
+  };
+
+  if (!selectedOffer) {
+    return (
+      <div className="min-h-screen bg-[#121212]">
+        <Navbar />
+        <main className="px-6 py-16 text-center">
+          <p className="text-gray-400">Cargando información del viaje...</p>
+        </main>
+      </div>
+    );
+  }
+
+  const statusInfo = getStatusInfo();
 
   return (
     <div className="min-h-screen bg-[#121212]">
       <Navbar />
       <main className="px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Ruta completa</h1>
-          <p className="text-gray-400 text-base">Tu viaje y compañeros de ruta</p>
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-4xl">{statusInfo.icon}</span>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-white">{statusInfo.title}</h1>
+              <p className={`text-sm text-gray-400 ${statusInfo.color}`}>{statusInfo.subtitle}</p>
+            </div>
+          </div>
+          {tripStatus !== "waiting" && (
+            <div className="mt-3 flex items-center gap-2 text-sm text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Tiempo estimado: {timeRemaining} min</span>
+            </div>
+          )}
         </div>
-        <div className="bg-[#1a1a1a] rounded-2xl border border-[#2a2a2a] p-6 mb-6">
+
           <div className="mb-6">
-            <div className="w-full h-64 bg-[#121212] border-2 border-dashed border-[#2a2a2a] rounded-lg flex items-center justify-center mb-6">
-              <div className="text-center">
-                <svg className="w-16 h-16 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          <div className="rounded-3xl overflow-hidden shadow-2xl shadow-[#3B82F6]/20 ring-2 ring-[#3B82F6]/10">
+            <MapView origin={pickupLocation} destination={destination} distanceKm={selectedOffer.distanceKm} durationMin={selectedOffer.durationMin} />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-b from-[#121212] to-[#181818] rounded-3xl border border-[#2a2a2a] p-6 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-[#3B82F6]/20 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#3B82F6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <p className="text-gray-500 text-sm font-medium">Mapa en desarrollo</p>
-                <p className="text-gray-600 text-xs mt-1">Visualización de ruta próximamente</p>
               </div>
-            </div>
-          </div>
-          <div className="mb-6 pb-6 border-b border-[#2a2a2a]">
-            <p className="text-xs text-gray-400 mb-1">Conductor</p>
-            <p className="text-lg font-bold text-white">{route.driverName}</p>
-          </div>
-          <div className="space-y-6">
-            <div className="flex items-start gap-3">
-              <div className="w-3 h-3 rounded-full bg-green-400 mt-2"></div>
-              <div className="flex-1">
-                <p className="text-xs text-gray-400 uppercase mb-1">Origen</p>
-                <p className="text-white text-sm font-medium">{route.origin}</p>
-              </div>
-            </div>
-            {mockPassengers.map((passenger, index) => (
-              <div key={passenger.id} className="flex items-start gap-3 pl-4 border-l-2 border-indigo-500/30">
-                <div className="w-3 h-3 rounded-full bg-indigo-400 mt-2"></div>
-                <div className="flex-1">
-                  <p className="text-xs text-gray-400 uppercase mb-1">Parada {index + 1}</p>
-                  <p className="text-white text-sm font-semibold">{passenger.name}</p>
-                  <p className="text-gray-400 text-xs">{passenger.pickupLocation}</p>
+              <div>
+                <p className="font-semibold text-white">{selectedOffer.driverName}</p>
+                <div className="flex items-center gap-1">
+                  <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <span className="text-xs text-gray-400">{selectedOffer.driverRating.toFixed(1)}</span>
                 </div>
               </div>
-            ))}
-            <div className="flex items-start gap-3">
-              <div className="w-3 h-3 rounded-full bg-red-400 mt-2"></div>
-              <div className="flex-1">
-                <p className="text-xs text-gray-400 uppercase mb-1">Destino</p>
-                <p className="text-white text-sm font-medium">{route.destination}</p>
+            </div>
+            <button className="p-2 bg-[#3B82F6]/20 rounded-lg hover:bg-[#3B82F6]/30 transition-colors">
+              <svg className="w-5 h-5 text-[#3B82F6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+            </button>
+          </div>
+          {selectedOffer.vehicleInfo && (
+            <div className="flex items-center gap-2 text-xs text-gray-400 pt-3 border-t border-[#2a2a2a]">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{selectedOffer.vehicleInfo}</span>
+            </div>
+          )}
+          </div>
+
+        <div className="bg-gradient-to-b from-[#121212] to-[#181818] rounded-3xl border border-[#2a2a2a] p-6 mb-4">
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="relative flex flex-col items-center">
+                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-lg shadow-green-400/50"></div>
+                <div className="w-0.5 h-8 bg-gradient-to-b from-green-400/50 to-transparent mt-1"></div>
+              </div>
+              <div className="flex-1 pt-0.5">
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Recogida</p>
+                <p className="text-base text-white font-semibold">{pickupLocation}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-3 h-3 rounded-full bg-red-400 shadow-lg shadow-red-400/50"></div>
+              <div className="flex-1 pt-0.5">
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Destino</p>
+                <p className="text-base text-white font-semibold">{destination}</p>
               </div>
             </div>
           </div>
         </div>
-        <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-4 mb-6">
+
+        <div className="bg-gradient-to-b from-[#121212] to-[#181818] rounded-3xl border border-[#2a2a2a] p-6 mb-6">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-400">Total de pasajeros</p>
-            <p className="text-lg font-bold text-white">{mockPassengers.length + 1}</p>
+            <p className="text-sm text-gray-400 font-medium">Precio del viaje</p>
+            <p className="text-2xl font-bold text-[#3B82F6]">S/{selectedOffer.price}</p>
           </div>
         </div>
+
+        {tripStatus === "arriving" ? (
+          <button
+            onClick={handleFinishTrip}
+            className="w-full px-6 py-4 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white font-semibold rounded-full transition-all duration-200 active:scale-95 shadow-2xl shadow-violet-500/30 hover:shadow-violet-500/50"
+          >
+            Finalizar viaje
+          </button>
+        ) : (
         <button
-          onClick={() => router.push("/pasajero/rating")}
-          className="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-500/20"
+            onClick={handleCancelTrip}
+            className="w-full px-6 py-3 border-2 border-red-500/50 text-red-400 font-semibold rounded-full hover:bg-red-500/10 transition-all duration-200 active:scale-95"
         >
-          Finalizar viaje y calificar
+            Cancelar viaje
         </button>
+        )}
       </main>
     </div>
   );

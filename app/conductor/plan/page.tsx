@@ -8,10 +8,12 @@ export default function ConductorPlanPage() {
   const router = useRouter();
 
   const handleSelectFreemium = () => {
+    localStorage.setItem("planType", "freemium");
     router.push("/conductor/publish");
   };
 
   const handleSelectPremium = () => {
+    localStorage.setItem("planType", "premium");
     router.push("/conductor/publish");
   };
 
@@ -27,14 +29,14 @@ export default function ConductorPlanPage() {
           <PlanCard
             name="Freemium"
             price={0}
-            features={["Hasta 5 publicaciones por mes", "Acceso básico a pasajeros", "Soporte por email"]}
+            features={["3 viajes al mes"]}
             isPremium={false}
             onSelect={handleSelectFreemium}
           />
           <PlanCard
             name="Premium"
             price={39.9}
-            features={["Publicaciones ilimitadas", "Prioridad en búsquedas", "Soporte prioritario", "Estadísticas avanzadas", "Sin comisiones"]}
+            features={["Viajes ilimitados"]}
             isPremium={true}
             onSelect={handleSelectPremium}
           />
