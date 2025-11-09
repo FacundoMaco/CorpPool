@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import MapView from "@/components/MapView";
 import { DriverOffer } from "@/data/mock";
 
-type TripStatus = "waiting" | "driver_coming" | "in_progress" | "arriving";
+type TripStatus = "waiting" | "driver_coming" | "in_progress" | "arriving" | "completed";
 
 export default function PasajeroRoutePage() {
   const router = useRouter();
@@ -15,6 +15,7 @@ export default function PasajeroRoutePage() {
   const [destination, setDestination] = useState("");
   const [tripStatus, setTripStatus] = useState<TripStatus>("waiting");
   const [timeRemaining, setTimeRemaining] = useState(5);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   useEffect(() => {
     const offerData = localStorage.getItem("selectedDriverOffer");
@@ -44,7 +45,19 @@ export default function PasajeroRoutePage() {
     const timeInterval = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
-          return tripStatus === "waiting" ? 5 : tripStatus === "driver_coming" ? 3 : tripStatus === "in_progress" ? 8 : 2;
+          setTripStatus((currentStatus) => {
+            if (currentStatus === "arriving") {
+              setTimeout(() => {
+                setShowSuccessAnimation(true);
+                setTimeout(() => {
+                  router.push("/pasajero/rating");
+                }, 3000);
+              }, 100);
+              return "completed";
+            }
+            return currentStatus;
+          });
+          return 0;
         }
         return prev - 1;
       });
@@ -54,7 +67,7 @@ export default function PasajeroRoutePage() {
       clearInterval(statusInterval);
       clearInterval(timeInterval);
     };
-  }, [tripStatus]);
+  }, [router]);
 
   const getStatusInfo = () => {
     switch (tripStatus) {
@@ -86,6 +99,20 @@ export default function PasajeroRoutePage() {
           icon: "✅",
           color: "text-green-400",
         };
+      case "completed":
+        return {
+          title: "Viaje completado",
+          subtitle: "¡Llegaste a tu destino!",
+          icon: "🎉",
+          color: "text-green-400",
+        };
+      default:
+        return {
+          title: "Viaje en curso",
+          subtitle: "Estás en camino",
+          icon: "📍",
+          color: "text-green-400",
+        };
     }
   };
 
@@ -113,10 +140,36 @@ export default function PasajeroRoutePage() {
 
   const statusInfo = getStatusInfo();
 
+  if (showSuccessAnimation) {
+    return (
+      <div className="min-h-screen bg-[#121212] flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 via-blue-500/20 to-purple-500/20 animate-pulse"></div>
+        <div className="relative z-10 text-center animate-scale-in">
+          <div className="w-32 h-32 mx-auto mb-6 relative">
+            <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
+            <div className="absolute inset-0 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="relative w-full h-full bg-green-500 rounded-full flex items-center justify-center">
+              <svg className="w-16 h-16 text-white animate-scale-in" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2 animate-fade-in">¡Llegaste!</h1>
+          <p className="text-xl text-gray-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>Viaje completado exitosamente</p>
+        </div>
+        <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: "0s", animationDuration: "1s" }}></div>
+        <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s", animationDuration: "1.2s" }}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-5 h-5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s", animationDuration: "1.1s" }}></div>
+        <div className="absolute top-1/2 right-1/3 w-4 h-4 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: "0.6s", animationDuration: "1.3s" }}></div>
+        <div className="absolute bottom-1/3 right-1/5 w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "0.8s", animationDuration: "1s" }}></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#121212]">
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="px-6 py-8 pb-24">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-4xl">{statusInfo.icon}</span>

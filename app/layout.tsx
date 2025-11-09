@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthGuard from "@/components/AuthGuard";
@@ -9,22 +9,22 @@ const inter = Inter({
   weight: ["500", "600", "700"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "CorpPool - Viajes compartidos corporativos",
   description: "Comparte viajes al trabajo con tus compañeros",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "CorpPool",
   },
-  themeColor: "#121212",
 };
 
 export default function RootLayout({

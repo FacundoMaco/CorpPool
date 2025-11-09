@@ -29,7 +29,7 @@ export default function PasajeroProfilePage() {
   return (
     <div className="min-h-screen bg-[#121212] animate-fade-in">
       <Navbar />
-      <main className="px-6 py-8">
+      <main className="px-6 py-8 pb-24">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Mi perfil</h1>
           <p className="text-gray-400 text-base">Gestiona tu cuenta y revisa tu actividad</p>
